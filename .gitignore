@@ -1,0 +1,13 @@
+# Chaves e segredos
+.env
+
+# Ambiente virtual
+.venv/
+venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Dados locais (banco SQLite, áudios)
+dados/
