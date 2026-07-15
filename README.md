@@ -42,6 +42,48 @@ execução e entre turnos, e **produz saídas estruturadas e verificáveis**.
 O agente é um `StateGraph` com estado tipado (`EstadoAgente`, um `TypedDict`), nós
 (funções puras) e edges condicionais para o roteamento por intenção.
 
+```mermaid
+flowchart TD
+    START([START]) --> V[validar_entrada]
+    V -->|válida| I[identificar_intencao<br/><i>LLM classifica</i>]
+    V -->|inválida| ERR[gerar_resposta_erro]
+
+    I -->|aprender| D[consultar_dicionario<br/><i>Free Dictionary API</i>]
+    D --> MF[montar_flashcard]
+    MF --> TR[traduzir_definicao<br/><i>LLM</i>]
+    TR --> SV[salvar_memoria_sqlite<br/><i>SQLite</i>]
+
+    I -->|gerar_termos| GT[gerar_lista_termos<br/><i>LLM</i>]
+    GT --> SM[salvar_multiplos_cards<br/><i>SQLite</i>]
+
+    I -->|leitura| GL[gerar_leitura<br/><i>LLM</i>]
+    I -->|responder_leitura| AL[avaliar_leitura<br/><i>LLM</i>]
+    AL --> SVL[salvar_vocab_leitura<br/><i>SQLite</i>]
+
+    I -->|revisar| BR[buscar_cards_revisao<br/><i>SQLite + SRS</i>]
+    I -->|responder_card| AR[avaliar_resposta]
+
+    I -->|remover| CR[contar_para_remover]
+    I -->|confirmar| ER[executar_remocao<br/><i>SQLite</i>]
+
+    I -->|progresso| BE[buscar_estatisticas<br/><i>SQLite</i>]
+    I -->|outro| RF
+
+    SV --> RF[gerar_resposta_final<br/><i>LLM</i>]
+    SM --> RF
+    GL --> RF
+    SVL --> RF
+    BR --> RF
+    AR --> RF
+    CR --> RF
+    ER --> RF
+    BE --> RF
+    ERR --> FIM([END])
+    RF --> FIM
+```
+
+Representação textual do mesmo fluxo:
+
 ```
 START
   → validar_entrada                      (validação da entrada)
